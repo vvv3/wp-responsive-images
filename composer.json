@@ -1,0 +1,25 @@
+{
+  "name": "vvv3/wp-responsive-images",
+  "description": "WordPress responsive images easily",
+  "type": "library",
+  "license": "MIT",
+  "homepage": "https://github.com/vvv3/wp-responsive-images#readme",
+  "authors": [
+    {
+      "name": "Valerii Vasyliev",
+      "email": "test.vvv@ukr.net"
+    }
+  ],
+  "keywords": [
+    "wordpress",
+    "responsive images"
+  ],
+  "require": {
+    "php": ">=8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "WPRI\\": "src/"
+    }
+  }
+}
