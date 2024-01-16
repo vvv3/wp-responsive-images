@@ -43,10 +43,16 @@ class ImgUtils
             $url = (\is_ssl() ? 'https:' : 'http:') . $url;
         }
 
-        $newImgUrl = \aq_resize($url, $width, $height, $crop, true, $upscale);
+        try {
+            $newImgUrl = \aq_resize($url, $width, $height, $crop, true, $upscale);
+        } catch (\Exception $ex) {
+            error_log("\nFile: {$ex->getFile()}\nLine: {$ex->getLine()}\nMessage: {$ex->getMessage()}\n");
+            $newImgUrl = '';
+        }
 
         return $newImgUrl ?: $url;
     }
+
 
 
     /**
