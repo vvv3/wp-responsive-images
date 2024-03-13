@@ -252,14 +252,14 @@ class ImgUtils
                 }
 
                 $srcset = [];
-                $srcset[] = SrcsetItem::makeWithResize($resizer, '1x', $lazy);
+                $srcset[] = SrcsetItem::makeWithResize($resizer, '1x');
 
                 if ($pixelRatio2x) {
                     $resizer->setWidth($widthToResize * 2);
                     if ($aspectRatio) {
                         $resizer->setHeight(round(($widthToResize * 2) / $aspectRatio));
                     }
-                    $srcset[] = SrcsetItem::makeWithResize($resizer, '2x', $lazy);
+                    $srcset[] = SrcsetItem::makeWithResize($resizer, '2x');
                 }
 
                 $sources[] = Source::make($srcset, [], $mediaQuery);
@@ -385,7 +385,7 @@ class ImgUtils
                     $resizer->setHeight(round($widthToResize / $aspectRatio));
                 }
 
-                $srcset[] = SrcsetItem::makeWithResize($resizer, "{$widthToResize}w", $lazy);
+                $srcset[] = SrcsetItem::makeWithResize($resizer, "{$widthToResize}w");
 
                 if ($pixelRatio2x) {
                     $resizer->setWidth($widthToResize * 2);
@@ -393,7 +393,7 @@ class ImgUtils
                         $resizer->setHeight(round(($widthToResize * 2) / $aspectRatio));
                     }
 
-                    $srcset[] = SrcsetItem::makeWithResize($resizer, ($widthToResize * 2) . 'w', $lazy);
+                    $srcset[] = SrcsetItem::makeWithResize($resizer, ($widthToResize * 2) . 'w');
                 }
             }
 

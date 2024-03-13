@@ -20,46 +20,15 @@ class SrcsetItem
     private string $descriptor;
 
     /**
-     * @var int|null Image pixel width.
-     */
-    private int|null $width;
-
-    /**
-     * @var int|null Image pixel height.
-     */
-    private int|null $height;
-
-    /**
-     * @var bool Image lazy loading.
-     */
-    private bool $lazy;
-
-
-    /**
      * Constructor.
      *
      * @param string   $url Image source url.
      * @param string   $descriptor Descriptor.
-     * @param int|null $width Image pixel width.
-     * @param int|null $height Image pixel height.
-     * @param bool     $lazy Image lazy loading.
      */
-    public function __construct(
-        string $url,
-        string $descriptor = '',
-        ?int $width = null,
-        ?int $height = null,
-        bool $lazy = false
-    ) {
+    public function __construct(string $url, string $descriptor = '') {
         $this->guard($url, $descriptor);
         $this->url = $url;
         $this->descriptor = $descriptor;
-        $this->lazy = $lazy;
-
-        $isSvg = ImgUtils::isSvgByAttachmentUrl($url);
-        if ( ! $isSvg) {
-            $this->resolveImageInfo($width, $height);
-        }
     }
 
 
@@ -100,41 +69,15 @@ class SrcsetItem
 
 
     /**
-     * @return int|null
-     */
-    public function getWidth(): ?int
-    {
-        return $this->width;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getHeight(): ?int
-    {
-        return $this->height;
-    }
-
-
-    /**
      * Static constructor
      *
      * @param string   $url Image source url.
      * @param string   $descriptor Descriptor.
-     * @param int|null $width Image pixel width.
-     * @param int|null $height Image pixel height.
-     * @param bool     $lazy Image lazy loading.
      *
      * @return static
      */
-    public static function make(
-        string $url,
-        string $descriptor = '',
-        ?int $width = null,
-        ?int $height = null,
-        bool $lazy = false
-    ): static {
-        return new static($url, $descriptor, $width, $height, $lazy);
+    public static function make(string $url, string $descriptor = ''): static {
+        return new static($url, $descriptor);
     }
 
 
@@ -143,44 +86,35 @@ class SrcsetItem
      *
      * @param Resizer $resizer Resizer.
      * @param string  $descriptor Descriptor.
-     * @param bool    $lazy Image lazy loading.
      *
      * @return static
      */
-    public static function makeWithResize(Resizer $resizer, string $descriptor = '', bool $lazy = false): static
+    public static function makeWithResize(Resizer $resizer, string $descriptor = ''): static
     {
         $isSvg = ImgUtils::isSvgByAttachmentUrl($resizer->getOriginUrl());
         if ($isSvg) {
-            return new static($resizer->getOriginUrl(), $descriptor, null, null, $lazy);
+            return new static($resizer->getOriginUrl(), $descriptor);
         }
         $resultData = $resizer->resize();
         $resultUrl = ! empty($resultData[0]) ? $resultData[0] : null;
-        $resultWidth = ! empty($resultData[1]) ? $resultData[1] : null;
-        $resultHeight = ! empty($resultData[2]) ? $resultData[2] : null;
 
-        return new static($resultUrl, $descriptor, $resultWidth, $resultHeight, $lazy);
+        return new static($resultUrl, $descriptor);
     }
 
 
     /**
-     * Resolves image information( width, height ).
+     * Renders srcset item.
      *
-     * @param int|null $width Image width.
-     * @param int|null $height Image height.
-     *
-     * @return void
-     * @throws \InvalidArgumentException
-     * @throws \RuntimeException
+     * @return string
      */
-    private function resolveImageInfo(?int $width = null, ?int $height = null): void
+    public function render(): string
     {
-        $this->width = $width ?: null;
-        $this->height = $height ?: null;
+        return $this->descriptor ? "{$this->url} {$this->descriptor}" : $this->url;
+    }
 
-        if (empty($this->width) || empty($this->height)) {
-            $attachInfo = ImgUtils::getAttachmentInfoByPath(ImgUtils::getAttachmentPathByUrl($this->url));
-            $this->width = $attachInfo['width'] ?: null;
-            $this->height = $attachInfo['height'] ?: null;
-        }
+
+    public function __toString(): string
+    {
+        return $this->render();
     }
 }

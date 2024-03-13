@@ -132,10 +132,11 @@ class Source
         $srcsetHtml = '';
         $separator = ', ';
 
+        $srcset = array_unique($srcset);
+
         /* @var SrcsetItem $srcsetItem */
         foreach ($srcset as $srcsetItem) {
-            $srcsetHtml .= $srcsetItem->getDescriptor() ? "{$srcsetItem->getUrl()} {$srcsetItem->getDescriptor()}" : $srcsetItem->getUrl();
-            $srcsetHtml .= $separator;
+            $srcsetHtml .= $srcsetItem->render() . $separator;
         }
         $srcsetHtml = rtrim($srcsetHtml, $separator);
         if ($srcsetHtml) {
