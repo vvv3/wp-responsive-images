@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Title         : Aqua Resizer
+ * Title         : Aqua Resizer (Customized)
  * Description   : Resizes WordPress images on the fly
  * Version       : 1.2.2
  * Author        : Syamil MJ
@@ -14,7 +14,7 @@
  * @param int     $height   - (optional)
  * @param bool    $crop     - (optional) default to soft crop
  * @param bool    $single   - (optional) returns an array if false
- * @param bool    $upscale  - (optional) resizes smaller images
+ * @param bool    $upscale  - (optional) resizes smaller images. Note: to upscale $crop must be true
  * @uses  wp_upload_dir()
  * @uses  image_resize_dimensions()
  * @uses  wp_get_image_editor()
@@ -62,7 +62,7 @@ if(!class_exists('Aq_Resize')) {
         /**
          * Run, forest.
          */
-        public function process( $url, $width = null, $height = null, $crop = null, $single = true, $upscale = false ) {
+        public function process( $url, $width = null, $height = null, $crop = false, $single = true, $upscale = false ) {
             try {
                 // Validate inputs.
                 if (!$url)
@@ -114,8 +114,20 @@ if(!class_exists('Aq_Resize')) {
 
                 // Get image size after cropping.
                 $dims = image_resize_dimensions( $orig_w, $orig_h, $width, $height, $crop );
-                $dst_w = $dims[4];
-                $dst_h = $dims[5];
+                /*
+                if ( ! $dims ) {
+                    error_log( "url: "    . $url . "\n" );
+                    error_log( "upscale: ". $upscale . "\n" );
+                    error_log( "orig_w: " . $orig_w . "\n" );
+                    error_log( "orig_h: " . $orig_h . "\n" );
+                    error_log( "width: "  . $width . "\n" );
+                    error_log( "height: " . $height . "\n" );
+                    error_log( "crop: " . $crop . "\n" );
+                    error_log( "image_resize_dimensions fail: \n" . debug_backtrace_string(). "\n" );
+                } */
+
+                $dst_w = isset( $dims[4] ) ? $dims[4] : null;
+                $dst_h = isset( $dims[5] ) ? $dims[5] : null;
 
                 // Return the original image only if it exactly fits the needed measures.
                 if ( ! $dims || ( ( ( null === $height && $orig_w == $width ) xor ( null === $width && $orig_h == $height ) ) xor ( $height == $orig_h && $width == $orig_w ) ) ) {
@@ -140,17 +152,18 @@ if(!class_exists('Aq_Resize')) {
                     else {
 
                         $editor = wp_get_image_editor( $img_path );
+                        // error_log( "editor quality: " . $editor->get_quality() . "\n" );
+                        // $editor->set_quality( 90 );
 
                         if ( is_wp_error( $editor ) ) {
                             throw new Aq_Exception('Unable to get WP_Image_Editor: ' .
                                                    $editor->get_error_message() . ' (is GD or ImageMagick installed?)');
                         }
 
-                        $resize = $editor->resize( $width, $height, $crop );
+                        $resizing_result = $editor->resize( $width, $height, $crop );
 
-                        if ( is_wp_error( $resize ) ) {
-                            throw new Aq_Exception('Unable to resize: ' .
-                                                   $resize->get_error_message());
+                        if ( is_wp_error( $resizing_result ) ) {
+                            throw new Aq_Exception('Unable to resize: ' . $resizing_result->get_error_message());
                         }
 
                         $resized_file = $editor->save();
@@ -184,7 +197,11 @@ if(!class_exists('Aq_Resize')) {
                 return $image;
             }
             catch (Aq_Exception $ex) {
-                error_log('Aq_Resize.process() error: ' . $ex->getMessage());
+                $msg = 'Aq_Resize.process() error: ' . $ex->getMessage();
+                if ( function_exists( 'debug_backtrace_string' ) ) {
+                    $msg .= "\n" . debug_backtrace_string();
+                }
+                error_log($msg );
 
                 if ($this->throwOnError) {
                     // Bubble up exception.
@@ -200,7 +217,7 @@ if(!class_exists('Aq_Resize')) {
         /**
          * Callback to overwrite WP computing of thumbnail measures
          */
-        function aq_upscale( $default, $orig_w, $orig_h, $dest_w, $dest_h, $crop ) {
+        public function aq_upscale( $default, $orig_w, $orig_h, $dest_w, $dest_h, $crop ) {
             if ( ! $crop ) return null; // Let the wordpress default function handle this.
 
             // Here is the point we allow to use larger image size than the original one.
@@ -239,7 +256,7 @@ if(!function_exists('aq_resize')) {
      * This is just a tiny wrapper function for the class above so that there is no
      * need to change any code in your own WP themes. Usage is still the same :)
      */
-    function aq_resize( $url, $width = null, $height = null, $crop = null, $single = true, $upscale = false ) {
+    function aq_resize( $url, $width = null, $height = null, $crop = false, $single = true, $upscale = false ) {
         /* WPML Fix */
         if ( defined( 'ICL_SITEPRESS_VERSION' ) ){
             global $sitepress;

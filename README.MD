@@ -43,7 +43,7 @@ The `\WPRI\ImgUtils::resizeImg` method returns a link to the modified image acco
 **Example:**
 
 ```php
-use WPRI;
+use WPRI\ImgUtils;
 ...
 <img src="<?php echo ImgUtils::resizeImg( get_the_post_thumbnail_url( get_the_ID(), 'full' ), 380, 250, true ); ?>" >
 ```

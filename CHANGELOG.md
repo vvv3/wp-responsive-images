@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.0.3
+
+* Aqua Resizer fixes and improvements
+
 ## v1.0.2
 
 * 'srcset' improvement - prevent duplicates
