@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v1.0.4
+
+* Added width and height attributes to svg images
+* Fixed attributes rendering
+
 ## v1.0.3
 
 * Aqua Resizer fixes and improvements

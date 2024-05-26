@@ -17,6 +17,11 @@ class Img
      */
     private bool $lazy;
 
+    /**
+     * @var bool Is SVG Image.
+     */
+    private bool $isSvg;
+
 
     /**
      * Constructor.
@@ -56,14 +61,16 @@ class Img
             $this->attrs['loading'] = 'lazy';
         }
 
-        $isSvg = ImgUtils::isSvgByAttachmentUrl($imgSrc);
-        if ( ! $isSvg) {
+        $this->isSvg = ImgUtils::isSvgByAttachmentUrl($imgSrc);
+
+        if (!$this->isSvg) {
             $this->attrs['sizes'] = implode(', ', $sizes);
-            $this->resolveImageInfo($width, $height);
             $this->resolveSrcset($srcset);
         } else {
             $this->attrs['data-is_svg'] = 1;
         }
+
+        $this->resolveImageInfo($width, $height);
     }
 
 
@@ -75,7 +82,7 @@ class Img
      */
     private function guard($imgSrc): void
     {
-        if ( ! $imgSrc) {
+        if (!$imgSrc) {
             throw new \InvalidArgumentException('Img: Empty $imgSrc');
         }
     }
@@ -141,7 +148,9 @@ class Img
             if (empty($attrValue) && in_array($attrName, ['srcset', 'sizes'], true)) {
                 continue;
             }
-            $tagContent .= $attrValue !== null ? $attrName . '="' . esc_attr($attrValue) . '" ' : esc_attr($attrName) . '" ';
+            $tagContent .= $attrValue !== null
+                ? esc_attr($attrName) . '="' . esc_attr($attrValue) . '" '
+                : esc_attr($attrName) . ' ';
         }
         $tagContent = rtrim($tagContent);
 
@@ -167,12 +176,11 @@ class Img
      */
     private function resolveImageInfo(?int $width = null, ?int $height = null): void
     {
-        $this->attrs['width'] = $width ?: null;
-        $this->attrs['height'] = $height ?: null;
-
-        if (empty($this->attrs['width']) || empty($this->attrs['height'])) {
+        if ($width && $height) {
+            $this->attrs['width'] = $width;
+            $this->attrs['height'] = $height;
+        } elseif (!$this->isSvg) {
             $attachInfo = ImgUtils::getAttachmentInfoByPath(ImgUtils::getAttachmentPathByUrl($this->attrs['src']));
-
             $this->attrs['width'] = $attachInfo['width'] ?: null;
             $this->attrs['height'] = $attachInfo['height'] ?: null;
         }

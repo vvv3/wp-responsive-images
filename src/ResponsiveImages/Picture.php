@@ -27,6 +27,11 @@ class Picture
      */
     private bool $lazy;
 
+    /**
+     * @var bool Is SVG Image.
+     */
+    private bool $isSvg;
+
 
     /**
      * Constructor.
@@ -60,13 +65,15 @@ class Picture
             $this->imgAttrs['loading'] = 'lazy';
         }
 
-        $isSvg = ImgUtils::isSvgByAttachmentUrl($imgSrc);
-        if ( ! $isSvg) {
+        $this->isSvg = ImgUtils::isSvgByAttachmentUrl($imgSrc);
+
+        if (!$this->isSvg) {
             $this->sources = $sources;
-            $this->resolveImageInfo($width, $height);
         } else {
             $this->imgAttrs['data-is_svg'] = 1;
         }
+
+        $this->resolveImageInfo($width, $height);
     }
 
 
@@ -78,7 +85,7 @@ class Picture
      */
     private function guard($imgSrc)
     {
-        if ( ! $imgSrc) {
+        if (!$imgSrc) {
             throw new \InvalidArgumentException('Picture: Empty $imgSrc');
         }
     }
@@ -159,7 +166,9 @@ class Picture
 
         $tagContent = '';
         foreach ($attrs as $attrName => $attrValue) {
-            $tagContent .= $attrValue !== null ? $attrName . '="' . esc_attr($attrValue) . '" ' : esc_attr($attrName) . '" ';
+            $tagContent .= $attrValue !== null
+                ? esc_attr($attrName) . '="' . esc_attr($attrValue) . '" '
+                : esc_attr($attrName) . ' ';
         }
         $tagContent = rtrim($tagContent);
 
@@ -182,7 +191,9 @@ class Picture
             if (empty($attrValue) && in_array($attrName, ['srcset', 'sizes'], true)) {
                 continue;
             }
-            $tagContent .= $attrValue !== null ? $attrName . '="' . esc_attr($attrValue) . '" ' : esc_attr($attrName) . '" ';
+            $tagContent .= $attrValue !== null
+                ? esc_attr($attrName) . '="' . esc_attr($attrValue) . '" '
+                : esc_attr($attrName) . ' ';
         }
         $tagContent = rtrim($tagContent);
 
@@ -208,12 +219,11 @@ class Picture
      */
     private function resolveImageInfo(?int $width = null, ?int $height = null): void
     {
-        $this->imgAttrs['width'] = $width ?: null;
-        $this->imgAttrs['height'] = $height ?: null;
-
-        if (empty($this->imgAttrs['width']) || empty($this->imgAttrs['height'])) {
+        if ($width && $height) {
+            $this->imgAttrs['width'] = $width;
+            $this->imgAttrs['height'] = $height;
+        } elseif (!$this->isSvg) {
             $attachInfo = ImgUtils::getAttachmentInfoByPath(ImgUtils::getAttachmentPathByUrl($this->imgAttrs['src']));
-
             $this->imgAttrs['width'] = $attachInfo['width'] ?: null;
             $this->imgAttrs['height'] = $attachInfo['height'] ?: null;
         }

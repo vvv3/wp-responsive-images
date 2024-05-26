@@ -106,7 +106,9 @@ class Source
             if (empty($attrValue) && in_array($attrName, ['srcset', 'sizes', 'media', 'type'], true)) {
                 continue;
             }
-            $tagContent .= $attrValue !== null ? $attrName . '="' . esc_attr($attrValue) . '" ' : esc_attr($attrName) . '" ';
+            $tagContent .= $attrValue !== null
+                ? esc_attr($attrName) . '="' . esc_attr($attrValue) . '" '
+                : esc_attr($attrName) . ' ';
         }
         $tagContent = rtrim($tagContent);
 
